@@ -37,5 +37,14 @@ public class DeviceService : IDeviceService
     {
         return await _context.Devices.FirstOrDefaultAsync(d => d.IMEI == imei);
     }
+    public async Task<bool> SetDeviceLockStateAsync(string imei, bool isLocked)
+    {
+        var device = await _context.Devices.FirstOrDefaultAsync(d => d.IMEI == imei);
+        if (device == null) return false;
+
+        device.IsLocked = isLocked;
+        await _context.SaveChangesAsync();
+        return true;
+    }
 
 }

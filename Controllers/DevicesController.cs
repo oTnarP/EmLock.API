@@ -42,5 +42,22 @@ public class DevicesController : ControllerBase
 
         return Ok(device);
     }
+    [HttpPost("{imei}/lock")]
+    [Authorize(Roles = "Admin,Shopkeeper")]
+    public async Task<ActionResult> LockDevice(string imei)
+    {
+        var updated = await _deviceService.SetDeviceLockStateAsync(imei, true);
+        if (!updated) return NotFound("Device not found");
+        return Ok("Device locked successfully");
+    }
 
+    [HttpPost("{imei}/unlock")]
+    [Authorize(Roles = "Admin,Shopkeeper")]
+    public async Task<ActionResult> UnlockDevice(string imei)
+    {
+        var updated = await _deviceService.SetDeviceLockStateAsync(imei, false);
+        if (!updated) return NotFound("Device not found");
+        return Ok("Device unlocked successfully");
+    }
+    
 }
