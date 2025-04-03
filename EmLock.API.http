@@ -1,0 +1,6 @@
+@EmLock.API_HostAddress = http://localhost:5234
+
+GET {{EmLock.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
