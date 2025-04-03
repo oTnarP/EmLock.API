@@ -1,6 +1,7 @@
 ﻿using EmLock.API.Data;
 using EmLock.API.Models;
 using EmLock.API.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmLock.API.Services;
 
@@ -27,4 +28,14 @@ public class DeviceService : IDeviceService
 
         return device;
     }
+
+    public async Task<List<Device>> GetAllDevicesAsync()
+    {
+        return await _context.Devices.ToListAsync();
+    }
+    public async Task<Device?> GetDeviceByImeiAsync(string imei)
+    {
+        return await _context.Devices.FirstOrDefaultAsync(d => d.IMEI == imei);
+    }
+
 }

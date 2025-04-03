@@ -3,6 +3,7 @@ using EmLock.API.Models.DTOs;
 using EmLock.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmLock.API.Controllers;
 
@@ -23,4 +24,23 @@ public class DevicesController : ControllerBase
         var added = await _deviceService.AddDeviceAsync(dto);
         return Ok(added);
     }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Shopkeeper")]
+    public async Task<ActionResult<List<Device>>> GetAllDevices()
+    {
+        var devices = await _deviceService.GetAllDevicesAsync();
+        return Ok(devices);
+    }
+
+    [HttpGet("{imei}")]
+    [Authorize(Roles = "Admin,Shopkeeper")]
+    public async Task<ActionResult<Device>> GetDeviceByImei(string imei)
+    {
+        var device = await _deviceService.GetDeviceByImeiAsync(imei);
+        if (device == null) return NotFound("Device not found");
+
+        return Ok(device);
+    }
+
 }

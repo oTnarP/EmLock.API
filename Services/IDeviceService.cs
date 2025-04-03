@@ -6,4 +6,7 @@ namespace EmLock.API.Services;
 public interface IDeviceService
 {
     Task<Device> AddDeviceAsync(DeviceDto dto);
+    Task<List<Device>> GetAllDevicesAsync();
+    Task<Device?> GetDeviceByImeiAsync(string imei);
+
 }
