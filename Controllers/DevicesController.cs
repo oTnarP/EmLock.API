@@ -73,4 +73,13 @@ public class DevicesController : ControllerBase
             isLocked = device.IsLocked
         });
     }
+    [HttpPut("{imei}")]
+    [Authorize(Roles = "Admin,Shopkeeper")]
+    public async Task<ActionResult<Device>> UpdateDevice(string imei, DeviceDto dto)
+    {
+        var updated = await _deviceService.UpdateDeviceAsync(imei, dto);
+        if (updated == null) return NotFound("Device not found");
+        return Ok(updated);
+    }
+
 }

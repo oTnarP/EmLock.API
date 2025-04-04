@@ -46,5 +46,18 @@ public class DeviceService : IDeviceService
         await _context.SaveChangesAsync();
         return true;
     }
+    public async Task<Device?> UpdateDeviceAsync(string imei, DeviceDto dto)
+    {
+        var device = await _context.Devices.FirstOrDefaultAsync(d => d.IMEI == imei);
+        if (device == null) return null;
+
+        device.Model = dto.Model;
+        device.OwnerName = dto.OwnerName;
+        device.OwnerPhone = dto.OwnerPhone;
+
+        await _context.SaveChangesAsync();
+        return device;
+    }
+
 
 }
