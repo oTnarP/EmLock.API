@@ -15,6 +15,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 // Add AuthService
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Authorization policies
 builder.Services.AddAuthorization(options =>

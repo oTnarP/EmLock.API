@@ -14,6 +14,7 @@ namespace EmLock.API.Data
         public DbSet<EmiSchedule> EmiSchedules { get; set; }
         public DbSet<EmiLog> EmiLogs { get; set; }
         public DbSet<DeviceActionLog> DeviceActionLogs { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
     }
 }
