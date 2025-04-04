@@ -25,5 +25,13 @@ namespace EmLock.API.Controllers
             await _notificationService.LogNotificationAsync(notification);
             return Ok(new { message = "Notification logged successfully." });
         }
+        [HttpGet("user/{userId}")]
+        [Authorize(Roles = "Admin,Shopkeeper")]
+        public async Task<ActionResult<List<Notification>>> GetByUser(int userId)
+        {
+            var logs = await _notificationService.GetNotificationsByUserIdAsync(userId);
+            return Ok(logs);
+        }
+
     }
 }
