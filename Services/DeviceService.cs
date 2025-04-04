@@ -60,9 +60,28 @@ public class DeviceService : IDeviceService
         if (device == null) return false;
 
         device.IsLocked = isLocked;
+
+        // Log the action
+        _context.DeviceActionLogs.Add(new DeviceActionLog
+        {
+            IMEI = imei,
+            ActionType = isLocked ? "Lock" : "Unlock",
+            PerformedBy = "System", // For now; replace with actual user if needed
+            Timestamp = DateTime.UtcNow
+        });
+
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<List<DeviceActionLog>> GetLogsByIMEIAsync(string imei)
+    {
+        return await _context.DeviceActionLogs
+            .Where(l => l.IMEI == imei)
+            .OrderByDescending(l => l.Timestamp)
+            .ToListAsync();
+    }
+
     public async Task<Device?> UpdateDeviceAsync(string imei, DeviceDto dto)
     {
         var device = await _context.Devices.FirstOrDefaultAsync(d => d.IMEI == imei);

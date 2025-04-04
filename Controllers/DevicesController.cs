@@ -3,6 +3,7 @@ using EmLock.API.Models.DTOs;
 using EmLock.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmLock.API.Controllers;
 
@@ -106,5 +107,14 @@ public class DevicesController : ControllerBase
         var devices = await _deviceService.GetDevicesByEmailAsync(userEmail);
         return Ok(devices);
     }
+    [HttpGet("logs/{imei}")]
+    [Authorize(Roles = "Shopkeeper,Admin")]
+    public async Task<ActionResult<IEnumerable<DeviceActionLog>>> GetLogsByIMEI(string imei)
+    {
+        var logs = await _deviceService.GetLogsByIMEIAsync(imei);
+        return Ok(logs);
+    }
+
+
 
 }
