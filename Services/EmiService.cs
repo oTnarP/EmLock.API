@@ -29,7 +29,6 @@ namespace EmLock.API.Services
             return emi;
         }
 
-
         public async Task<List<EmiSchedule>> GetEmisByDeviceIdAsync(int deviceId)
         {
             return await _context.EmiSchedules
@@ -37,5 +36,39 @@ namespace EmLock.API.Services
                 .OrderBy(e => e.DueDate)
                 .ToListAsync();
         }
+        public async Task<bool> MarkAsPaidAsync(int emiId)
+        {
+            var emi = await _context.EmiSchedules.FindAsync(emiId);
+            if (emi == null) return false;
+
+            emi.IsPaid = true;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<List<EmiSchedule>> GetOverdueEmisAsync()
+        {
+            return await _context.EmiSchedules
+                .Where(e => !e.IsPaid && e.DueDate < DateTime.UtcNow)
+                .ToListAsync();
+        }
+        public async Task<int> AutoLockOverdueDevicesAsync()
+        {
+            var today = DateTime.UtcNow;
+
+            // Get all overdue and unpaid EMIs
+            var overdueEmis = await _context.EmiSchedules
+                .Include(e => e.Device)
+                .Where(e => !e.IsPaid && e.DueDate < today && !e.Device.IsLocked)
+                .ToListAsync();
+
+            foreach (var emi in overdueEmis)
+            {
+                emi.Device.IsLocked = true;
+            }
+
+            await _context.SaveChangesAsync();
+            return overdueEmis.Count;
+        }
+
     }
 }

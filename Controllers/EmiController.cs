@@ -25,11 +25,37 @@ namespace EmLock.API.Controllers
             return Ok(emi);
         }
 
-        [HttpGet("{deviceId}")]
-        public async Task<ActionResult<List<EmiSchedule>>> GetEmisByDeviceId(int deviceId)
+        [HttpGet("device/{deviceId}")]
+        [Authorize(Roles = "Shopkeeper")]
+        public async Task<ActionResult<List<EmiSchedule>>> GetEmisByDevice(int deviceId)
         {
             var emis = await _emiService.GetEmisByDeviceIdAsync(deviceId);
             return Ok(emis);
         }
+
+        [HttpPut("{emiId}/pay")]
+        [Authorize(Roles = "Shopkeeper")]
+        public async Task<IActionResult> MarkAsPaid(int emiId)
+        {
+            var success = await _emiService.MarkAsPaidAsync(emiId);
+            if (!success) return NotFound();
+
+            return Ok(new { message = "EMI marked as paid." });
+        }
+        [HttpGet("overdue")]
+        [Authorize(Roles = "Shopkeeper,Admin")]
+        public async Task<ActionResult<List<EmiSchedule>>> GetOverdueEmis()
+        {
+            var overdueEmis = await _emiService.GetOverdueEmisAsync();
+            return Ok(overdueEmis);
+        }
+        [HttpPost("auto-lock-overdue")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AutoLockOverdueDevices()
+        {
+            var count = await _emiService.AutoLockOverdueDevicesAsync();
+            return Ok(new { message = $"{count} device(s) locked due to overdue EMIs." });
+        }
+
     }
 }
