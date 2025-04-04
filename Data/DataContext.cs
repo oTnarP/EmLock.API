@@ -11,5 +11,7 @@ namespace EmLock.API.Data
         public DbSet<Device> Devices { get; set; }
         public DbSet<EMIPlan> EMIPlans { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<EmiSchedule> EmiSchedules { get; set; }
+
     }
 }

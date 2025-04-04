@@ -10,5 +10,6 @@ public interface IDeviceService
     Task<Device?> GetDeviceByImeiAsync(string imei);
     Task<bool> SetDeviceLockStateAsync(string imei, bool isLocked);
     Task<Device?> UpdateDeviceAsync(string imei, DeviceDto dto);
+    Task<List<Device>> GetDevicesByEmailAsync(string email);
 
 }

@@ -6,5 +6,7 @@
         public string Model { get; set; }
         public string OwnerName { get; set; }
         public string OwnerPhone { get; set; }
+        public int UserId { get; set; }
+
     }
 }

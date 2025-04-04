@@ -17,12 +17,25 @@ public class DevicesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Shopkeeper")]
+    [Authorize]
     public async Task<ActionResult<Device>> AddDevice(DeviceDto dto)
     {
+        // 🔹 Get logged-in user ID from JWT token claims
+        var userId = User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized("User ID not found in token");
+
+        var userIdClaim = User.FindFirst("UserId");
+        if (userIdClaim == null) return Unauthorized("User ID not found in token");
+
+        dto.UserId = int.Parse(userIdClaim.Value); 
+
+
         var added = await _deviceService.AddDeviceAsync(dto);
         return Ok(added);
     }
+
 
     [HttpGet]
     [Authorize(Roles = "Admin,Shopkeeper")]
@@ -80,6 +93,18 @@ public class DevicesController : ControllerBase
         var updated = await _deviceService.UpdateDeviceAsync(imei, dto);
         if (updated == null) return NotFound("Device not found");
         return Ok(updated);
+    }
+    [HttpGet("my")]
+    [Authorize(Roles = "Customer,Shopkeeper")]
+    public async Task<ActionResult<List<Device>>> GetMyDevices()
+    {
+        var userIdClaim = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress");
+        if (userIdClaim == null)
+            return Unauthorized("User email not found in token.");
+
+        var userEmail = userIdClaim.Value;
+        var devices = await _deviceService.GetDevicesByEmailAsync(userEmail);
+        return Ok(devices);
     }
 
 }

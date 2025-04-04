@@ -54,6 +54,7 @@ builder.Services.AddAuthorization(options =>
 
 // Add controllers
 builder.Services.AddControllers();
+builder.Services.AddScoped<IEmiService, EmiService>();
 
 // ✅ Swagger + JWT config
 builder.Services.AddEndpointsApiExplorer();

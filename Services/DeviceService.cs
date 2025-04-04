@@ -20,7 +20,8 @@ public class DeviceService : IDeviceService
             IMEI = dto.IMEI,
             Model = dto.Model,
             OwnerName = dto.OwnerName,
-            OwnerPhone = dto.OwnerPhone
+            OwnerPhone = dto.OwnerPhone,
+            UserId = dto.UserId
         };
 
         _context.Devices.Add(device);
@@ -59,5 +60,15 @@ public class DeviceService : IDeviceService
         return device;
     }
 
+    public async Task<List<Device>> GetDevicesByEmailAsync(string email)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null)
+            return new List<Device>();
+
+        return await _context.Devices
+            .Where(d => d.UserId == user.Id)
+            .ToListAsync();
+    }
 
 }

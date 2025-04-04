@@ -1,4 +1,7 @@
-﻿namespace EmLock.API.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace EmLock.API.Models;
 
 public class Device
 {
@@ -8,4 +11,10 @@ public class Device
     public string OwnerName { get; set; }
     public string OwnerPhone { get; set; }
     public bool IsLocked { get; set; } = false;
+    public int UserId { get; set; } // Foreign key
+
+    [ForeignKey("UserId")]
+    [JsonIgnore]
+    public User User { get; set; }
+
 }
