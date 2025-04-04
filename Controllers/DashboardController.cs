@@ -1,4 +1,5 @@
-﻿using EmLock.API.Services;
+﻿using EmLock.API.Dtos;
+using EmLock.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -23,5 +24,18 @@ namespace EmLock.API.Controllers
             var summary = await _dashboardService.GetOverviewAsync();
             return Ok(summary);
         }
+        [HttpGet("summary")]
+        public async Task<IActionResult> GetSummary()
+        {
+            var result = await _dashboardService.GetOverviewAsync();
+            return Ok(result);
+        }
+        [HttpGet("monthly-emi-stats")]
+        public async Task<ActionResult<List<MonthlyEmiStatDto>>> GetMonthlyEmiStats()
+        {
+            var stats = await _dashboardService.GetMonthlyEmiStatsAsync();
+            return Ok(stats);
+        }
+
     }
 }
