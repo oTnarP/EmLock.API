@@ -8,5 +8,8 @@
         public string OwnerPhone { get; set; }
         public int UserId { get; set; }
 
+        // Optional EMI details
+        public EmiScheduleDto? Emi { get; set; }
+
     }
 }

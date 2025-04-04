@@ -27,8 +27,24 @@ public class DeviceService : IDeviceService
         _context.Devices.Add(device);
         await _context.SaveChangesAsync();
 
+        // Add EMI if provided
+        if (dto.Emi != null)
+        {
+            var emi = new EmiSchedule
+            {
+                DeviceId = device.Id,
+                DueDate = dto.Emi.DueDate.ToUniversalTime(), // Make sure it's UTC
+                Amount = dto.Emi.Amount,
+                IsPaid = false
+            };
+
+            _context.EmiSchedules.Add(emi);
+            await _context.SaveChangesAsync();
+        }
+
         return device;
     }
+
 
     public async Task<List<Device>> GetAllDevicesAsync()
     {
