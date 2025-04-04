@@ -56,6 +56,13 @@ namespace EmLock.API.Controllers
             var count = await _emiService.AutoLockOverdueDevicesAsync();
             return Ok(new { message = $"{count} device(s) locked due to overdue EMIs." });
         }
+        [HttpGet("logs/{emiScheduleId}")]
+        [Authorize(Roles = "Shopkeeper")]
+        public async Task<ActionResult<List<EmiLog>>> GetLogsByEmiScheduleId(int emiScheduleId)
+        {
+            var logs = await _emiService.GetLogsByEmiScheduleIdAsync(emiScheduleId);
+            return Ok(logs);
+        }
 
     }
 }

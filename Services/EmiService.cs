@@ -39,12 +39,25 @@ namespace EmLock.API.Services
         public async Task<bool> MarkAsPaidAsync(int emiId)
         {
             var emi = await _context.EmiSchedules.FindAsync(emiId);
-            if (emi == null) return false;
+            if (emi == null || emi.IsPaid)
+                return false;
 
             emi.IsPaid = true;
+            emi.PaymentDate = DateTime.UtcNow;
+
+            var log = new EmiLog
+            {
+                EmiScheduleId = emi.Id,
+                AmountPaid = emi.Amount,
+                PaymentDate = emi.PaymentDate.Value,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.EmiLogs.Add(log);
             await _context.SaveChangesAsync();
             return true;
         }
+
         public async Task<List<EmiSchedule>> GetOverdueEmisAsync()
         {
             return await _context.EmiSchedules
@@ -68,6 +81,13 @@ namespace EmLock.API.Services
 
             await _context.SaveChangesAsync();
             return overdueEmis.Count;
+        }
+        public async Task<List<EmiLog>> GetLogsByEmiScheduleIdAsync(int emiScheduleId)
+        {
+            return await _context.EmiLogs
+                .Where(log => log.EmiScheduleId == emiScheduleId)
+                .OrderByDescending(log => log.PaymentDate)
+                .ToListAsync();
         }
 
     }

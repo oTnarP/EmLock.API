@@ -10,6 +10,7 @@ namespace EmLock.API.Services
         Task<bool> MarkAsPaidAsync(int emiId);
         Task<List<EmiSchedule>> GetOverdueEmisAsync();
         Task<int> AutoLockOverdueDevicesAsync();
+        Task<List<EmiLog>> GetLogsByEmiScheduleIdAsync(int emiScheduleId);
 
     }
 }
