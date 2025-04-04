@@ -3,13 +3,11 @@ using EmLock.API.Models.DTOs;
 using EmLock.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EmLock.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = "ShopkeeperOnly")]
 public class DevicesController : ControllerBase
 {
     private readonly IDeviceService _deviceService;
@@ -19,6 +17,7 @@ public class DevicesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Shopkeeper")]
     public async Task<ActionResult<Device>> AddDevice(DeviceDto dto)
     {
         var added = await _deviceService.AddDeviceAsync(dto);
@@ -42,6 +41,7 @@ public class DevicesController : ControllerBase
 
         return Ok(device);
     }
+
     [HttpPost("{imei}/lock")]
     [Authorize(Roles = "Admin,Shopkeeper")]
     public async Task<ActionResult> LockDevice(string imei)
@@ -59,5 +59,18 @@ public class DevicesController : ControllerBase
         if (!updated) return NotFound("Device not found");
         return Ok("Device unlocked successfully");
     }
-    
+
+    [HttpGet("{imei}/status")]
+    [Authorize(Roles = "Customer")]
+    public async Task<ActionResult<object>> GetDeviceLockStatus(string imei)
+    {
+        var device = await _deviceService.GetDeviceByImeiAsync(imei);
+        if (device == null) return NotFound("Device not found");
+
+        return Ok(new
+        {
+            imei = device.IMEI,
+            isLocked = device.IsLocked
+        });
+    }
 }
