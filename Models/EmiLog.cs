@@ -10,7 +10,7 @@ namespace EmLock.API.Models
 
         public decimal AmountPaid { get; set; }
 
-        public DateTime PaymentDate { get; set; } = DateTime.UtcNow; // when this EMI was paid
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;   // when this log was recorded
+        public DateTime PaidAt { get; set; } = DateTime.UtcNow;  // 🆕 Add this
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;  // 🆕 And this
     }
 }

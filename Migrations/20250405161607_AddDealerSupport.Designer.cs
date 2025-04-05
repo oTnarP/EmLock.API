@@ -3,6 +3,7 @@ using System;
 using EmLock.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EmLock.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250405161607_AddDealerSupport")]
+    partial class AddDealerSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,7 +165,7 @@ namespace EmLock.API.Migrations
                     b.Property<int>("EmiScheduleId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("PaidAt")
+                    b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -294,7 +297,7 @@ namespace EmLock.API.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("EmLock.API.Models.Wallet", b =>
+            modelBuilder.Entity("Wallet", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -305,21 +308,23 @@ namespace EmLock.API.Migrations
                     b.Property<decimal>("Balance")
                         .HasColumnType("numeric");
 
-                    b.Property<int?>("DealerId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("UserId1")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("DealerId")
-                        .IsUnique();
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Wallets");
                 });
 
-            modelBuilder.Entity("EmLock.API.Models.WalletTransaction", b =>
+            modelBuilder.Entity("WalletTransaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -336,10 +341,6 @@ namespace EmLock.API.Migrations
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<int>("WalletId")
                         .HasColumnType("integer");
@@ -415,19 +416,21 @@ namespace EmLock.API.Migrations
                     b.Navigation("Dealer");
                 });
 
-            modelBuilder.Entity("EmLock.API.Models.Wallet", b =>
+            modelBuilder.Entity("Wallet", b =>
                 {
-                    b.HasOne("EmLock.API.Models.User", "Dealer")
-                        .WithOne("Wallet")
-                        .HasForeignKey("EmLock.API.Models.Wallet", "DealerId");
+                    b.HasOne("EmLock.API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Dealer");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("EmLock.API.Models.WalletTransaction", b =>
+            modelBuilder.Entity("WalletTransaction", b =>
                 {
-                    b.HasOne("EmLock.API.Models.Wallet", "Wallet")
-                        .WithMany()
+                    b.HasOne("Wallet", "Wallet")
+                        .WithMany("Transactions")
                         .HasForeignKey("WalletId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -443,9 +446,11 @@ namespace EmLock.API.Migrations
             modelBuilder.Entity("EmLock.API.Models.User", b =>
                 {
                     b.Navigation("Devices");
+                });
 
-                    b.Navigation("Wallet")
-                        .IsRequired();
+            modelBuilder.Entity("Wallet", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }

@@ -3,6 +3,7 @@ using System;
 using EmLock.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EmLock.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250405163851_FixWalletModel")]
+    partial class FixWalletModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,7 +165,7 @@ namespace EmLock.API.Migrations
                     b.Property<int>("EmiScheduleId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("PaidAt")
+                    b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -319,38 +322,6 @@ namespace EmLock.API.Migrations
                     b.ToTable("Wallets");
                 });
 
-            modelBuilder.Entity("EmLock.API.Models.WalletTransaction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("WalletId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WalletId");
-
-                    b.ToTable("WalletTransactions");
-                });
-
             modelBuilder.Entity("EmLock.API.Models.Device", b =>
                 {
                     b.HasOne("EmLock.API.Models.User", "User")
@@ -422,17 +393,6 @@ namespace EmLock.API.Migrations
                         .HasForeignKey("EmLock.API.Models.Wallet", "DealerId");
 
                     b.Navigation("Dealer");
-                });
-
-            modelBuilder.Entity("EmLock.API.Models.WalletTransaction", b =>
-                {
-                    b.HasOne("EmLock.API.Models.Wallet", "Wallet")
-                        .WithMany()
-                        .HasForeignKey("WalletId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Wallet");
                 });
 
             modelBuilder.Entity("EmLock.API.Models.Dealer", b =>

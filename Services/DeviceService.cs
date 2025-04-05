@@ -114,5 +114,4 @@ public class DeviceService : IDeviceService
             .ToListAsync();
     }
 
-
 }
