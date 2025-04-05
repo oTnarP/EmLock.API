@@ -36,6 +36,13 @@ namespace EmLock.API.Controllers
             var stats = await _dashboardService.GetMonthlyEmiStatsAsync();
             return Ok(stats);
         }
+        [HttpGet("top-customers")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetTopCustomers()
+        {
+            var topCustomers = await _dashboardService.GetTopPayingCustomersAsync();
+            return Ok(topCustomers);
+        }
 
     }
 }

@@ -1,5 +1,6 @@
 ﻿using EmLock.API.Data;
 using EmLock.API.Dtos;
+using EmLock.API.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
@@ -64,6 +65,24 @@ namespace EmLock.API.Services
             return result;
         }
 
+        public async Task<List<TopCustomerDto>> GetTopPayingCustomersAsync(int count = 5)
+        {
+            return await _context.Users
+                .Where(u => u.Role == "Customer")
+                .Select(u => new TopCustomerDto
+                {
+                    CustomerId = u.Id,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    TotalPaid = u.Devices
+                        .SelectMany(d => d.EmiSchedules)
+                        .Where(e => e.IsPaid)
+                        .Sum(e => (decimal?)e.Amount) ?? 0
+                })
+                .OrderByDescending(c => c.TotalPaid)
+                .Take(count)
+                .ToListAsync();
+        }
 
     }
 }
