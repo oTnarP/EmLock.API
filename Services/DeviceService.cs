@@ -13,8 +13,15 @@ public class DeviceService : IDeviceService
         _context = context;
     }
 
-    public async Task<Device> AddDeviceAsync(DeviceDto dto)
+    public async Task<Device?> AddDeviceAsync(DeviceDto dto)
     {
+        // 🔐 Check if IMEI already exists
+        bool imeiExists = await _context.Devices.AnyAsync(d => d.IMEI == dto.IMEI);
+        if (imeiExists)
+        {
+            return null; // Let controller handle the error message
+        }
+
         var device = new Device
         {
             IMEI = dto.IMEI,
@@ -33,7 +40,7 @@ public class DeviceService : IDeviceService
             var emi = new EmiSchedule
             {
                 DeviceId = device.Id,
-                DueDate = dto.Emi.DueDate.ToUniversalTime(), // Make sure it's UTC
+                DueDate = dto.Emi.DueDate.ToUniversalTime(),
                 Amount = dto.Emi.Amount,
                 IsPaid = false
             };
@@ -44,6 +51,7 @@ public class DeviceService : IDeviceService
 
         return device;
     }
+
 
 
     public async Task<List<Device>> GetAllDevicesAsync()
@@ -105,5 +113,6 @@ public class DeviceService : IDeviceService
             .Where(d => d.UserId == user.Id)
             .ToListAsync();
     }
+
 
 }

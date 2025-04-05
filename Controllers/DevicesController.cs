@@ -21,18 +21,19 @@ public class DevicesController : ControllerBase
     [Authorize]
     public async Task<ActionResult<Device>> AddDevice(DeviceDto dto)
     {
-        // 🔹 Get logged-in user ID from JWT token claims
-        var userId = User?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
-
-        if (string.IsNullOrEmpty(userId))
+        // ✅ Get user ID from JWT claim
+        var userIdClaim = User.FindFirst("UserId");
+        if (userIdClaim == null)
             return Unauthorized("User ID not found in token");
 
-        var userIdClaim = User.FindFirst("UserId");
-        if (userIdClaim == null) return Unauthorized("User ID not found in token");
+        dto.UserId = int.Parse(userIdClaim.Value);
 
-        dto.UserId = int.Parse(userIdClaim.Value); 
+        // 🚫 Check if IMEI already exists
+        var existing = await _deviceService.GetDeviceByImeiAsync(dto.IMEI);
+        if (existing != null)
+            return BadRequest(new { message = "A device with this IMEI already exists." });
 
-
+        // ✅ Add device
         var added = await _deviceService.AddDeviceAsync(dto);
         return Ok(added);
     }
@@ -87,6 +88,7 @@ public class DevicesController : ControllerBase
             isLocked = device.IsLocked
         });
     }
+
     [HttpPut("{imei}")]
     [Authorize(Roles = "Admin,Shopkeeper")]
     public async Task<ActionResult<Device>> UpdateDevice(string imei, DeviceDto dto)
@@ -95,6 +97,7 @@ public class DevicesController : ControllerBase
         if (updated == null) return NotFound("Device not found");
         return Ok(updated);
     }
+
     [HttpGet("my")]
     [Authorize(Roles = "Customer,Shopkeeper")]
     public async Task<ActionResult<List<Device>>> GetMyDevices()
@@ -107,6 +110,7 @@ public class DevicesController : ControllerBase
         var devices = await _deviceService.GetDevicesByEmailAsync(userEmail);
         return Ok(devices);
     }
+
     [HttpGet("logs/{imei}")]
     [Authorize(Roles = "Shopkeeper,Admin")]
     public async Task<ActionResult<IEnumerable<DeviceActionLog>>> GetLogsByIMEI(string imei)
@@ -114,7 +118,4 @@ public class DevicesController : ControllerBase
         var logs = await _deviceService.GetLogsByIMEIAsync(imei);
         return Ok(logs);
     }
-
-
-
 }
