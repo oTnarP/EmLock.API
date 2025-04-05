@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,10 +42,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
             ),
-            RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
-            NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+            RoleClaimType = ClaimTypes.Role, // ← KEY FIX
+            NameClaimType = ClaimTypes.Name
         };
     });
+
+
 
 // Authorization policies
 builder.Services.AddAuthorization(options =>
@@ -52,6 +55,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
     options.AddPolicy("ShopkeeperOnly", policy => policy.RequireRole("Shopkeeper"));
     options.AddPolicy("CustomerOnly", policy => policy.RequireRole("Customer"));
+    options.AddPolicy("DealerOnly", policy => policy.RequireRole("Dealer"));
 });
 
 

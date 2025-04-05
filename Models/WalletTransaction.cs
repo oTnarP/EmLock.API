@@ -13,6 +13,6 @@ namespace EmLock.API.Models
         public string Type { get; set; } // "Credit" or "Debit"
         public string Description { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
+        public int DealerId { get; set; }
     }
 }
