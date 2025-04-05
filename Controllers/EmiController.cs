@@ -63,6 +63,13 @@ namespace EmLock.API.Controllers
             var logs = await _emiService.GetLogsByEmiScheduleIdAsync(emiScheduleId);
             return Ok(logs);
         }
+        [HttpPost("filter")]
+        [Authorize(Roles = "Admin,Shopkeeper")]
+        public async Task<ActionResult<List<EmiSchedule>>> FilterEmis([FromBody] EmiFilterDto filter)
+        {
+            var emis = await _emiService.FilterEmisAsync(filter);
+            return Ok(emis);
+        }
 
     }
 }

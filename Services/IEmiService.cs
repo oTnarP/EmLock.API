@@ -11,6 +11,7 @@ namespace EmLock.API.Services
         Task<List<EmiSchedule>> GetOverdueEmisAsync();
         Task<int> AutoLockOverdueDevicesAsync();
         Task<List<EmiLog>> GetLogsByEmiScheduleIdAsync(int emiScheduleId);
+        Task<List<EmiSchedule>> FilterEmisAsync(EmiFilterDto filter);
 
     }
 }

@@ -16,6 +16,8 @@ public class Device
     [ForeignKey("UserId")]
     [JsonIgnore]
     public User User { get; set; }
+
+    [JsonIgnore]
     public List<EmiSchedule> EmiSchedules { get; set; } = new List<EmiSchedule>();
 
 }

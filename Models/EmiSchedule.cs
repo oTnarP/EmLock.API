@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace EmLock.API.Models
 {
@@ -8,6 +9,7 @@ namespace EmLock.API.Models
 
         public int DeviceId { get; set; }
 
+        [JsonIgnore]
         [ForeignKey("DeviceId")]
         public Device Device { get; set; }
 

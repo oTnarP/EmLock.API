@@ -129,6 +129,30 @@ namespace EmLock.API.Services
                 .OrderByDescending(log => log.PaidAt)
                 .ToListAsync();
         }
+        public async Task<List<EmiSchedule>> FilterEmisAsync(EmiFilterDto filter)
+        {
+            var query = _context.EmiSchedules.AsQueryable();
+
+            if (filter.IsPaid.HasValue)
+                query = query.Where(e => e.IsPaid == filter.IsPaid);
+
+            if (filter.FromDate.HasValue)
+                query = query.Where(e => e.DueDate >= filter.FromDate.Value);
+
+            if (filter.ToDate.HasValue)
+                query = query.Where(e => e.DueDate <= filter.ToDate.Value);
+
+            if (filter.DeviceId.HasValue)
+                query = query.Where(e => e.DeviceId == filter.DeviceId.Value);
+
+            if (filter.UserId.HasValue)
+                query = query.Where(e => e.Device.UserId == filter.UserId.Value);
+
+            return await query
+                .Include(e => e.Device)
+                .OrderByDescending(e => e.DueDate)
+                .ToListAsync();
+        }
 
     }
 }
