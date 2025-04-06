@@ -52,8 +52,6 @@ public class DeviceService : IDeviceService
         return device;
     }
 
-
-
     public async Task<List<Device>> GetAllDevicesAsync()
     {
         return await _context.Devices.ToListAsync();
@@ -113,5 +111,18 @@ public class DeviceService : IDeviceService
             .Where(d => d.UserId == user.Id)
             .ToListAsync();
     }
+    public async Task<bool> ReactivateDeviceAsync(int deviceId)
+    {
+        var device = await _context.Devices
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(d => d.Id == deviceId && d.IsDeleted);
+
+        if (device == null) return false;
+
+        device.IsDeleted = false;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
 
 }

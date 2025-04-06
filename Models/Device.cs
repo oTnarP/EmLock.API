@@ -12,6 +12,8 @@ public class Device
     public string OwnerPhone { get; set; }
     public bool IsLocked { get; set; } = false;
     public int UserId { get; set; } // Foreign key
+    public bool IsDeleted { get; set; } = false;
+
 
     [ForeignKey("UserId")]
     [JsonIgnore]

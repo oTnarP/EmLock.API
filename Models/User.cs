@@ -27,6 +27,7 @@ namespace EmLock.API.Models
 
         [NotMapped]
         public bool IsCurrentlyLicensed => LicenseEndDate != null && LicenseEndDate > DateTime.UtcNow;
+        public bool IsDeleted { get; set; } = false;
 
 
 

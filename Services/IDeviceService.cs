@@ -12,5 +12,7 @@ public interface IDeviceService
     Task<Device?> UpdateDeviceAsync(string imei, DeviceDto dto);
     Task<List<Device>> GetDevicesByEmailAsync(string email);
     Task<List<DeviceActionLog>> GetLogsByIMEIAsync(string imei);
+    Task<bool> ReactivateDeviceAsync(int id);
+
 
 }

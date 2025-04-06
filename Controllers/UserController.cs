@@ -23,5 +23,15 @@ namespace EmLock.API.Controllers
             var users = await _userService.GetShopkeepersWithLicenseInfoAsync();
             return Ok(users);
         }
+        [HttpPost("reactivate/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ReactivateUser(int id)
+        {
+            var success = await _userService.ReactivateUserAsync(id);
+            if (!success) return NotFound(new { message = "User not found or already active." });
+
+            return Ok(new { message = "User reactivated successfully." });
+        }
+
     }
 }

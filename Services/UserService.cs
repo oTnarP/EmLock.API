@@ -28,4 +28,14 @@ public class UserService : IUserService
             })
             .ToListAsync<object>();
     }
+    public async Task<bool> ReactivateUserAsync(int userId)
+    {
+        var user = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId && u.IsDeleted);
+        if (user == null) return false;
+
+        user.IsDeleted = false;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
 }

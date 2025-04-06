@@ -29,11 +29,30 @@ namespace EmLock.API.Services
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
         }
+
         public async Task LogNotificationAsync(Notification notification)
         {
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
         }
 
+        // 🔔 New: Queue Firebase Push Notification (to be picked by background worker)
+        public async Task QueueNotificationAsync(int? userId, string title, string message, string? type, string? deviceToken = null)
+        {
+            var notif = new Notification
+            {
+                UserId = userId ?? 0,
+                Title = title,
+                Message = message,
+                DeviceToken = deviceToken,
+                CreatedAt = DateTime.UtcNow,
+                Status = "Queued",
+                Type = type ?? "Push"
+            };
+
+
+            _context.Notifications.Add(notif);
+            await _context.SaveChangesAsync();
+        }
     }
 }

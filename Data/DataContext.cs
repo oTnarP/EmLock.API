@@ -19,18 +19,28 @@ namespace EmLock.API.Data
         public DbSet<Dealer> Dealers { get; set; }
         public DbSet<WalletTransaction> WalletTransactions { get; set; }
         public DbSet<WithdrawalRequest> WithdrawalRequests { get; set; }
+        public DbSet<PushNotification> PushNotifications { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // 👇 Add this inside OnModelCreating
+            // 🔄 Wallet relationship
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Wallet)
                 .WithOne(w => w.Dealer)
                 .HasForeignKey<Wallet>(w => w.DealerId);
+
+            // 🔒 Global filters to ignore soft-deleted records
+            modelBuilder.Entity<User>()
+                .HasQueryFilter(u => !u.IsDeleted);
+
+            modelBuilder.Entity<Device>()
+                .HasQueryFilter(d => !d.IsDeleted);
         }
+
 
 
     }

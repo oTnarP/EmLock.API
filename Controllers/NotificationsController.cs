@@ -32,6 +32,27 @@ namespace EmLock.API.Controllers
             var logs = await _notificationService.GetNotificationsByUserIdAsync(userId);
             return Ok(logs);
         }
+        [HttpPost("queue")]
+        [Authorize] // or [AllowAnonymous] for now if needed
+        public async Task<IActionResult> QueueNotification([FromBody] Notification dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.DeviceToken))
+                return BadRequest(new { message = "Device token is required." });
+
+            dto.Status = "Queued";
+            dto.CreatedAt = DateTime.UtcNow;
+            dto.UserId = dto.UserId == 0 ? int.Parse(User.FindFirst("UserId")?.Value ?? "0") : dto.UserId;
+
+            await _notificationService.QueueNotificationAsync(
+                dto.UserId,
+                dto.DeviceToken,
+                dto.Title,
+                dto.Message,
+                dto.Type
+            );
+
+            return Ok(new { message = "Notification queued and logged." });
+        }
 
     }
 }
