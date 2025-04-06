@@ -37,9 +37,24 @@ namespace EmLock.API.Services
 
             if (dto.Role == "Shopkeeper")
             {
-                user.LicenseStartDate = dto.LicenseStartDate ?? DateTime.UtcNow;
-                user.LicenseEndDate = dto.LicenseEndDate ?? DateTime.UtcNow.AddMonths(1);
+                user.LicenseStartDate = (dto.LicenseStartDate ?? DateTime.UtcNow).ToUniversalTime();
+                user.LicenseEndDate = (dto.LicenseEndDate ?? DateTime.UtcNow.AddMonths(1)).ToUniversalTime();
                 user.IsLicenseActive = true;
+            }
+
+            if (dto.Role == "Dealer")
+            {
+                var dealer = new Dealer
+                {
+                    Name = dto.FullName,
+                    Phone = dto.Phone,
+                    Email = dto.Email
+                };
+
+                _context.Dealers.Add(dealer);
+                await _context.SaveChangesAsync();
+
+                user.DealerId = dealer.Id;
             }
 
             _context.Users.Add(user);
@@ -51,27 +66,49 @@ namespace EmLock.API.Services
         public async Task<object> Login(UserLoginDto dto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == dto.Email);
-            if (user == null) throw new Exception("User not found");
+            if (user == null)
+                throw new Exception("User not found");
 
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 throw new Exception("Invalid credentials");
 
-            // Check if 2FA is enabled
-            if (user.Is2FAEnabled)
+            // If 2FA is enabled, return early and don't issue token
+            if (user.Is2FAEnabled && !string.IsNullOrEmpty(user.TwoFactorSecretKey))
             {
                 return new
                 {
-                    Requires2FA = true,
+                    requires2FA = true,
                     userId = user.Id,
-                    message = "Two-factor authentication required."
+                    email = user.Email
                 };
             }
 
+            // Otherwise, issue JWT token
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("UserId", user.Id.ToString())
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: creds
+            );
+
             return new
             {
-                token = GenerateJwtToken(user)
+                token = new JwtSecurityTokenHandler().WriteToken(token)
             };
         }
+
 
         public string GenerateJwtToken(User user)
         {

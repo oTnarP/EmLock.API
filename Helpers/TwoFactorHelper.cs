@@ -12,11 +12,11 @@ namespace EmLock.API.Helpers
             return Base32Encoding.ToString(secret); // Base32 string
         }
 
-        public static string GenerateProvisioningUri(string email, string secretKey, string issuer = "EmLock")
+        public static string GenerateOtpUrl(string email, string secretKey, string issuer = "EmLock")
         {
             var encodedIssuer = HttpUtility.UrlEncode(issuer);
             var encodedEmail = HttpUtility.UrlEncode(email);
-            return $"otpauth://totp/{encodedIssuer}:{encodedEmail}?secret={secretKey}&issuer={encodedIssuer}&digits=6";
+            return $"otpauth://totp/{issuer}:{email}?secret={secretKey}&issuer={encodedIssuer}&digits=6";
         }
 
         public static bool VerifyCode(string secretKey, string userInputCode)

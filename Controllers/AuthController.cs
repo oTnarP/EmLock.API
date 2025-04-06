@@ -2,9 +2,11 @@
 using EmLock.API.Helpers;
 using EmLock.API.Models.DTOs;
 using EmLock.API.Services;
+using iText.StyledXmlParser.Jsoup.Helper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OtpNet;
 
 
 namespace EmLock.API.Controllers
@@ -25,8 +27,18 @@ namespace EmLock.API.Controllers
         public async Task<IActionResult> Register(UserRegisterDto dto)
         {
             var user = await _authService.Register(dto);
-            return Ok(user);
+
+            // 🧼 Avoid circular reference by returning only necessary fields
+            return Ok(new
+            {
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.Role,
+                user.DealerId
+            });
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserLoginDto dto)
@@ -68,6 +80,47 @@ namespace EmLock.API.Controllers
 
             // If valid, you can generate and return a real JWT or token
             return Ok(new { message = "2FA verified successfully." });
+        }
+        [Authorize]
+        [HttpPost("setup-2fa")]
+        public IActionResult Setup2FA()
+        {
+            var userId = int.Parse(User.FindFirst("UserId")!.Value);
+
+            var secret = KeyGeneration.GenerateRandomKey(20);
+            var secretBase32 = Base32Encoding.ToString(secret);
+            var label = User.Identity?.Name ?? "user";
+            var issuer = "EmLock";
+
+            var otpUrl = TwoFactorHelper.GenerateOtpUrl(label, secretBase32, issuer);
+
+            var user = _context.Users.Find(userId);
+            if (user == null) return NotFound();
+
+            user.TwoFactorSecretKey = secretBase32;
+            _context.SaveChanges();
+
+            return Ok(new
+            {
+                secretKey = secretBase32,
+                qrCodeUrl = otpUrl
+            });
+        }
+
+        [HttpPost("enable-2fa")]
+        public async Task<IActionResult> Enable2FA([FromBody] TwoFactorVerifyDto dto)
+        {
+            var user = await _context.Users.FindAsync(dto.UserId);
+            if (user == null || string.IsNullOrEmpty(user.TwoFactorSecretKey)) return BadRequest("Secret key not found");
+
+            var totp = new Totp(Base32Encoding.ToBytes(user.TwoFactorSecretKey));
+            if (!totp.VerifyTotp(dto.Code, out _))
+                return BadRequest("Invalid OTP");
+
+            user.Is2FAEnabled = true;
+            await _context.SaveChangesAsync();
+
+            return Ok("2FA enabled successfully");
         }
 
     }
