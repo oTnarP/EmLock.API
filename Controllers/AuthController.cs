@@ -1,7 +1,11 @@
-﻿using EmLock.API.Models.DTOs;
+﻿using EmLock.API.Data;
+using EmLock.API.Helpers;
+using EmLock.API.Models.DTOs;
 using EmLock.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace EmLock.API.Controllers
 {
@@ -10,10 +14,11 @@ namespace EmLock.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService)
+        private readonly DataContext _context;
+        public AuthController(IAuthService authService, DataContext context)
         {
             _authService = authService;
+            _context = context;
         }
 
         [HttpPost("register")]
@@ -51,6 +56,19 @@ namespace EmLock.API.Controllers
             return Ok("You're logged in!");
         }
 
+        [HttpPost("verify-2fa")]
+        public async Task<IActionResult> VerifyTwoFactor([FromBody] TwoFactorDto dto)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.Is2FAEnabled);
+            if (user == null || string.IsNullOrEmpty(user.TwoFactorSecretKey))
+                return BadRequest(new { message = "2FA is not enabled for this user." });
+
+            bool isValid = TwoFactorHelper.VerifyCode(user.TwoFactorSecretKey, dto.Code);
+            if (!isValid) return Unauthorized(new { message = "Invalid 2FA code." });
+
+            // If valid, you can generate and return a real JWT or token
+            return Ok(new { message = "2FA verified successfully." });
+        }
 
     }
 }

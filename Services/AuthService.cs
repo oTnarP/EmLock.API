@@ -23,7 +23,7 @@ namespace EmLock.API.Services
 
         public async Task<User> Register(UserRegisterDto dto)
         {
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password); // ✅ use BCrypt
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
             var user = new User
             {
@@ -35,12 +35,11 @@ namespace EmLock.API.Services
                 DealerId = dto.DealerId
             };
 
-            // Set license only if role is Shopkeeper
             if (dto.Role == "Shopkeeper")
             {
                 user.LicenseStartDate = dto.LicenseStartDate ?? DateTime.UtcNow;
                 user.LicenseEndDate = dto.LicenseEndDate ?? DateTime.UtcNow.AddMonths(1);
-                user.IsLicenseActive = true; // By default, new shopkeepers are active
+                user.IsLicenseActive = true;
             }
 
             _context.Users.Add(user);
@@ -49,19 +48,33 @@ namespace EmLock.API.Services
             return user;
         }
 
-
-        public async Task<string> Login(UserLoginDto dto)
+        public async Task<object> Login(UserLoginDto dto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == dto.Email);
             if (user == null) throw new Exception("User not found");
 
-            using var hmac = new HMACSHA512();
-            var passwordHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password)));
-
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 throw new Exception("Invalid credentials");
 
+            // Check if 2FA is enabled
+            if (user.Is2FAEnabled)
+            {
+                return new
+                {
+                    Requires2FA = true,
+                    userId = user.Id,
+                    message = "Two-factor authentication required."
+                };
+            }
 
+            return new
+            {
+                token = GenerateJwtToken(user)
+            };
+        }
+
+        public string GenerateJwtToken(User user)
+        {
             var claims = new[]
             {
                 new Claim(ClaimTypes.Email, user.Email),
@@ -72,7 +85,6 @@ namespace EmLock.API.Services
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],

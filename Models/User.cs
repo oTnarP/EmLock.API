@@ -28,6 +28,8 @@ namespace EmLock.API.Models
         [NotMapped]
         public bool IsCurrentlyLicensed => LicenseEndDate != null && LicenseEndDate > DateTime.UtcNow;
         public bool IsDeleted { get; set; } = false;
+        public string? TwoFactorSecretKey { get; set; }  // Manual secret
+        public bool Is2FAEnabled { get; set; } = false;
 
 
 
