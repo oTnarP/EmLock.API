@@ -31,8 +31,17 @@ namespace EmLock.API.Services
                 Role = dto.Role,
                 Phone = dto.Phone,
                 Email = dto.Email,
-                PasswordHash = passwordHash
+                PasswordHash = passwordHash,
+                DealerId = dto.DealerId
             };
+
+            // Set license only if role is Shopkeeper
+            if (dto.Role == "Shopkeeper")
+            {
+                user.LicenseStartDate = dto.LicenseStartDate ?? DateTime.UtcNow;
+                user.LicenseEndDate = dto.LicenseEndDate ?? DateTime.UtcNow.AddMonths(1);
+                user.IsLicenseActive = true; // By default, new shopkeepers are active
+            }
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();

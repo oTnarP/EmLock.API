@@ -43,6 +43,34 @@ namespace EmLock.API.Controllers
             var transactions = await _walletService.GetWalletTransactionsAsync(dealerId);
             return Ok(transactions);
         }
+        [HttpPost("freeze/{dealerId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> FreezeWallet(int dealerId, [FromBody] string adminNote)
+        {
+            var wallet = await _walletService.GetWalletByDealerIdAsync(dealerId);
+            if (wallet == null) return NotFound("Wallet not found");
+
+            wallet.IsFrozen = true;
+            wallet.AdminNote = adminNote;
+            await _walletService.SaveChangesAsync();
+
+            return Ok(new { message = "Wallet frozen", dealerId });
+        }
+
+        [HttpPost("unfreeze/{dealerId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UnfreezeWallet(int dealerId)
+        {
+            var wallet = await _walletService.GetWalletByDealerIdAsync(dealerId);
+            if (wallet == null) return NotFound("Wallet not found");
+
+            wallet.IsFrozen = false;
+            wallet.AdminNote = null;
+            await _walletService.SaveChangesAsync();
+
+            return Ok(new { message = "Wallet unfrozen", dealerId });
+        }
+
     }
 
 }

@@ -8,6 +8,7 @@ namespace EmLock.API.Services
         Task AddEarningsAsync(int dealerId, int adminId, decimal totalAmount, float dealerPercentage);
         Task<Wallet> GetWalletByDealerIdAsync(int dealerId);
         Task<List<WalletTransaction>> GetWalletTransactionsAsync(int dealerId);
+        Task SaveChangesAsync();
 
     }
 }

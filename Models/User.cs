@@ -1,4 +1,6 @@
-﻿namespace EmLock.API.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace EmLock.API.Models
 {
     public class User
     {
@@ -19,6 +21,14 @@
         // 🔹 New: Wallet tracking for profit-sharing
         public decimal WalletBalance { get; set; } = 0;
         public Wallet Wallet { get; set; }  // One-to-one relation
+        public DateTime? LicenseStartDate { get; set; }
+        public DateTime? LicenseEndDate { get; set; }
+        public bool IsLicenseActive { get; set; } = true;
+
+        [NotMapped]
+        public bool IsCurrentlyLicensed => LicenseEndDate != null && LicenseEndDate > DateTime.UtcNow;
+
+
 
     }
 }

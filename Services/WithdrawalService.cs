@@ -20,7 +20,8 @@ namespace EmLock.API.Services
         public async Task<bool> RequestWithdrawalAsync(int dealerId, decimal amount)
         {
             var wallet = await _context.Wallets.FirstOrDefaultAsync(w => w.DealerId == dealerId);
-            if (wallet == null || wallet.Balance < amount) return false;
+            if (wallet == null || wallet.IsFrozen || wallet.Balance < amount)
+                return false;
 
             var request = new WithdrawalRequest
             {
@@ -34,6 +35,7 @@ namespace EmLock.API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
 
         public async Task<List<WithdrawalRequest>> GetRequestsByDealerAsync(int dealerId)
         {

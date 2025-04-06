@@ -8,5 +8,8 @@
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 
         public User Dealer { get; set; }
+        public bool IsFrozen { get; set; } = false;
+        public string? AdminNote { get; set; } // Reason for freeze or manual adjustment
+
     }
 }
